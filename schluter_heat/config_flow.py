@@ -230,13 +230,6 @@ class SchluterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 "location_help": "Select which location to add to Home Assistant"
             }
         )
-            errors=errors,
-            description_placeholders={
-                "username_help": "Your Schluter account email address",
-                "password_help": "Your Schluter account password (never stored)",
-                "location_id_help": "Found in the URL when viewing your thermostats (e.g., /location/103355)"
-            }
-        )
 
     async def async_step_reauth(self, entry_data: dict[str, Any]) -> FlowResult:
         """Handle reauth when refresh token expires."""
