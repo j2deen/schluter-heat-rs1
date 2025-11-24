@@ -1,0 +1,52 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Schluter DITRA-HEAT-E-RS1",
+        "description": "Enter your Schluter account credentials. Your password is used only once to generate a secure token and is never stored. We'll automatically detect your locations.",
+        "data": {
+          "username": "Email Address",
+          "password": "Password"
+        },
+        "data_description": {
+          "username": "Your Schluter account email address",
+          "password": "Your Schluter account password (used once, never stored)"
+        }
+      },
+      "location": {
+        "title": "Select Location",
+        "description": "You have multiple locations. Select which one to add to Home Assistant.",
+        "data": {
+          "location_id": "Location"
+        },
+        "data_description": {
+          "location_id": "Select the location to configure"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate with Schluter",
+        "description": "Your session has expired. Please enter your credentials to reconnect. Your password will be used once to generate a new secure token and will not be stored.",
+        "data": {
+          "username": "Email Address",
+          "password": "Password"
+        },
+        "data_description": {
+          "username": "Your Schluter account email address",
+          "password": "Your Schluter account password (used once, never stored)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid username or password",
+      "cannot_connect": "Unable to connect to Schluter API",
+      "no_locations": "No locations found for this account",
+      "no_devices": "No devices found at this location",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "This Schluter location is already configured",
+      "reauth_successful": "Successfully reconnected",
+      "reauth_failed": "Reauth failed - entry not found"
+    }
+  }
+}
