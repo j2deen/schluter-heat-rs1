@@ -1,3 +1,10 @@
+This was a result of leveraging both the Android appliation and the webinterface to get the correct API calls to provide the integration.
+
+Leveraged AI to help vibe code this - so it's still being tested.
+
+Thanks,
+Jay
+
 # Schluter DITRA-HEAT-E-RS1 Integration for Home Assistant - BETA v1
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
