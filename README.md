@@ -1,10 +1,4 @@
-WIP This does not work yet - still working through easier authentication flow between 
-
-https://schluterditraheat.com/
-and the actual provider of service for the RS1 thermostat 
-https://neviweb.com
-
-# Schluter DITRA-HEAT-E-RS1 Integration for Home Assistant - WIP Alpha v1.0
+# Schluter DITRA-HEAT-E-RS1 Integration for Home Assistant
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
@@ -42,20 +36,29 @@ Control your Schluter DITRA-HEAT-E-RS1 WiFi floor heating thermostats from Home 
 
 ## Configuration
 
-### Easy Setup - Just 2 Fields!
+### Super Easy Setup (1 minute!)
 
-1. In Home Assistant, go to **Settings** → **Devices & Services**
-2. Click **+ Add Integration**
-3. Search for "Schluter DITRA-HEAT-E-RS1"
-4. Enter your **Schluter account email and password**
-5. If you have multiple locations, select which one to add
-6. Done!
+**Step 1: Get your refresh token** (30 seconds)
 
-**Your password is used once to generate a secure token and is never stored!**
+1. Go to https://schluterditraheat.com and log in
+2. Press `F12` to open console
+3. Paste this and press Enter:
+```javascript
+copy(localStorage.getItem('neviwebRefreshToken'))
+```
+4. Your token is now in your clipboard!
 
-**We automatically detect your locations - no need to find location IDs!**
+**Step 2: Add integration** (30 seconds)
 
-Your thermostats will now appear as climate entities!
+1. In Home Assistant: **Settings** → **Devices & Services** → **Add Integration**
+2. Search "Schluter DITRA-HEAT-E-RS1"
+3. Paste your refresh token
+4. If you have multiple locations, select which one
+5. Done!
+
+**We automatically detect your locations - no manual lookup needed!**
+
+Your thermostats will appear as climate entities!
 
 ## Usage
 
@@ -257,6 +260,11 @@ entities:
 - Click "Configure" and enter your credentials again
 - Takes only 15 seconds!
 
+## Support
+
+- **Issues**: [GitHub Issues](https://github.com/your-username/schluter-heat/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-username/schluter-heat/discussions)
+
 ## Credits
 
 Created with ❤️ for the Home Assistant community.
@@ -268,7 +276,7 @@ Special thanks to:
 
 ## License
 
-Apache 2.0 - see LICENSE file for details
+MIT License - see LICENSE file for details
 
 ## Disclaimer
 

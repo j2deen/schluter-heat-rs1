@@ -7,7 +7,7 @@
 **Option A: HACS (Easiest)**
 1. Open HACS → Integrations
 2. Click ⋮ (three dots) → Custom repositories
-3. Add: `https://github.com/j2deen/schluter-heat-rs1`
+3. Add: `https://github.com/your-username/schluter-heat-rs1`
 4. Category: Integration
 5. Click "Install"
 6. Restart Home Assistant
