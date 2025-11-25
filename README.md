@@ -1,11 +1,10 @@
-This was a result of leveraging both the Android appliation and the webinterface to get the correct API calls to provide the integration.
+WIP This does not work yet - still working through easier authentication flow between 
 
-Leveraged AI to help vibe code this - so it's still being tested.
+https://schluterditraheat.com/
+and the actual provider of service for the RS1 thermostat 
+https://neviweb.com
 
-Thanks,
-Jay
-
-# Schluter DITRA-HEAT-E-RS1 Integration for Home Assistant - BETA v1
+# Schluter DITRA-HEAT-E-RS1 Integration for Home Assistant - WIP Alpha v1.0
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
