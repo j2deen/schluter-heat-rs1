@@ -3,14 +3,12 @@
     "step": {
       "user": {
         "title": "Connect to Schluter DITRA-HEAT-E-RS1",
-        "description": "Enter your Schluter account credentials. Your password is used only once to generate a secure token and is never stored. We'll automatically detect your locations.",
+        "description": "Enter your Schluter refresh token. We'll automatically detect your locations. See documentation for easy token extraction method (30 seconds!).",
         "data": {
-          "username": "Email Address",
-          "password": "Password"
+          "refresh_token": "Refresh Token"
         },
         "data_description": {
-          "username": "Your Schluter account email address",
-          "password": "Your Schluter account password (used once, never stored)"
+          "refresh_token": "Get this easily with one line of code - see documentation"
         }
       },
       "location": {
@@ -25,19 +23,17 @@
       },
       "reauth_confirm": {
         "title": "Reauthenticate with Schluter",
-        "description": "Your session has expired. Please enter your credentials to reconnect. Your password will be used once to generate a new secure token and will not be stored.",
+        "description": "Your refresh token has expired. Get a new one using the easy method (30 seconds) - see documentation.",
         "data": {
-          "username": "Email Address",
-          "password": "Password"
+          "refresh_token": "New Refresh Token"
         },
         "data_description": {
-          "username": "Your Schluter account email address",
-          "password": "Your Schluter account password (used once, never stored)"
+          "refresh_token": "Get a fresh token - see documentation for easy method"
         }
       }
     },
     "error": {
-      "invalid_auth": "Invalid username or password",
+      "invalid_auth": "Invalid refresh token or authentication failed",
       "cannot_connect": "Unable to connect to Schluter API",
       "no_locations": "No locations found for this account",
       "no_devices": "No devices found at this location",

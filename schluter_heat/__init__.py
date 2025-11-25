@@ -31,7 +31,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Authenticate
     try:
         await api.login(entry.data[CONF_REFRESH_TOKEN])
-        await api.connect()
     except (SchluterAuthenticationError, SchluterAPIError) as err:
         _LOGGER.error("Failed to authenticate with Schluter API: %s", err)
         return False
@@ -112,10 +111,11 @@ class SchluterDataUpdateCoordinator(DataUpdateCoordinator):
             return data
 
         except SchluterAuthenticationError as err:
-            # Try to reconnect once
-            _LOGGER.warning("Authentication error, attempting to reconnect: %s", err)
+            # Try to reconnect once by re-logging in
+            _LOGGER.warning("Authentication error, attempting to re-login: %s", err)
             try:
-                await self.api.connect()
+                refresh_token = self.config_entry.data[CONF_REFRESH_TOKEN]
+                await self.api.login(refresh_token)
                 # Retry the update
                 return await self._async_update_data()
             except SchluterAuthenticationError:

@@ -20,15 +20,13 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_USERNAME): str,
-        vol.Required(CONF_PASSWORD): str,
+        vol.Required(CONF_REFRESH_TOKEN): str,
     }
 )
 
 STEP_REAUTH_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_USERNAME): str,
-        vol.Required(CONF_PASSWORD): str,
+        vol.Required(CONF_REFRESH_TOKEN): str,
     }
 )
 
@@ -41,23 +39,12 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     session = async_get_clientsession(hass)
     api = SchluterAPI(session)
 
-    # Test authentication with username/password
+    # Test authentication with refresh token
     try:
-        # Login with credentials to get refresh token
-        login_response = await api.login_with_credentials(
-            data[CONF_USERNAME], 
-            data[CONF_PASSWORD]
-        )
+        _LOGGER.info("Attempting login with refresh token...")
         
-        # Extract refresh token from response
-        refresh_token = login_response.get("refreshToken") or login_response.get("refresh_token")
-        
-        if not refresh_token:
-            _LOGGER.error(f"Login response missing refresh token: {login_response.keys()}")
-            raise ValueError("No refresh token received from login")
-        
-        # Connect to get session
-        await api.connect()
+        # Login with refresh token - this also returns session ID
+        await api.login(data[CONF_REFRESH_TOKEN])
         
         # Get all locations for this user
         locations = await api.get_locations()
@@ -85,13 +72,13 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
             return {
                 "title": f"Schluter Heat - {location_name}",
                 "device_count": device_count,
-                "refresh_token": refresh_token,
+                "refresh_token": data[CONF_REFRESH_TOKEN],
                 "locations": locations,
             }
         else:
             # Initial validation - just return locations
             return {
-                "refresh_token": refresh_token,
+                "refresh_token": data[CONF_REFRESH_TOKEN],
                 "locations": locations,
             }
         
@@ -119,7 +106,7 @@ class SchluterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Handle the initial step - username/password entry."""
+        """Handle the initial step - refresh token entry."""
         errors: dict[str, str] = {}
         
         if user_input is not None:
@@ -137,8 +124,7 @@ class SchluterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     
                     # Validate this location has devices
                     validation_data = {
-                        CONF_USERNAME: user_input[CONF_USERNAME],
-                        CONF_PASSWORD: user_input[CONF_PASSWORD],
+                        CONF_REFRESH_TOKEN: user_input[CONF_REFRESH_TOKEN],
                         CONF_LOCATION_ID: location_id,
                     }
                     info = await validate_input(self.hass, validation_data)
@@ -180,8 +166,7 @@ class SchluterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=STEP_USER_DATA_SCHEMA,
             errors=errors,
             description_placeholders={
-                "username_help": "Your Schluter account email address",
-                "password_help": "Your password (used once, never stored)",
+                "refresh_token_help": "Get this easily - see documentation",
             }
         )
     
@@ -249,20 +234,18 @@ class SchluterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_abort(reason="reauth_failed")
             
             try:
-                # Validate credentials and get new refresh token
-                # Pass username/password but only location_id for validation
+                # Validate new refresh token
                 validation_data = {
-                    CONF_USERNAME: user_input[CONF_USERNAME],
-                    CONF_PASSWORD: user_input[CONF_PASSWORD],
+                    CONF_REFRESH_TOKEN: user_input[CONF_REFRESH_TOKEN],
                     CONF_LOCATION_ID: entry.data[CONF_LOCATION_ID],
                 }
                 
-                info = await validate_input(self.hass, validation_data)
+                await validate_input(self.hass, validation_data)
                 
-                # Store only the new refresh token, NOT the credentials
+                # Store only the new refresh token
                 new_data = {
                     CONF_LOCATION_ID: entry.data[CONF_LOCATION_ID],
-                    CONF_REFRESH_TOKEN: info["refresh_token"],
+                    CONF_REFRESH_TOKEN: user_input[CONF_REFRESH_TOKEN],
                 }
                 
             except ValueError as err:
@@ -290,7 +273,6 @@ class SchluterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=STEP_REAUTH_DATA_SCHEMA,
             errors=errors,
             description_placeholders={
-                "username_help": "Your Schluter account email address",
-                "password_help": "Your password (used once to generate new token, never stored)",
+                "refresh_token_help": "Get a new token - see documentation for easy method",
             }
         )

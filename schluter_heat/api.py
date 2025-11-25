@@ -143,16 +143,35 @@ class SchluterAPI:
                 response.raise_for_status()
                 data = await response.json()
                 
-                # Extract refresh token from response
-                if "refreshToken" in data:
-                    self._refresh_token = data["refreshToken"]
-                elif "refresh_token" in data:
-                    self._refresh_token = data["refresh_token"]
-                else:
-                    _LOGGER.error(f"No refresh token in response: {data}")
+                # Log response structure for debugging
+                _LOGGER.debug(f"Login response keys: {list(data.keys())}")
+                
+                # Extract refresh token from response - try multiple possible keys
+                refresh_token = None
+                
+                # Try different possible key names
+                for key in ["refreshToken", "refresh_token", "RefreshToken", "REFRESH_TOKEN"]:
+                    if key in data:
+                        refresh_token = data[key]
+                        _LOGGER.debug(f"Found refresh token with key: {key}")
+                        break
+                
+                # Try nested locations
+                if not refresh_token and "session" in data:
+                    session_data = data["session"]
+                    for key in ["refreshToken", "refresh_token"]:
+                        if key in session_data:
+                            refresh_token = session_data[key]
+                            _LOGGER.debug(f"Found refresh token in session.{key}")
+                            break
+                
+                if not refresh_token:
+                    _LOGGER.error(f"No refresh token in response. Response keys: {list(data.keys())}")
+                    _LOGGER.error(f"Full response (sanitized): {self._sanitize_response(data)}")
                     raise SchluterAuthenticationError("No refresh token received")
                 
-                self._access_token = data.get("access_token") or data.get("accessToken")
+                self._refresh_token = refresh_token
+                self._access_token = data.get("access_token") or data.get("accessToken") or data.get("session", {}).get("access_token")
                 
                 if "user" in data:
                     self._user_id = data["user"].get("id")
@@ -161,9 +180,26 @@ class SchluterAPI:
                 _LOGGER.info(f"Login successful. User ID: {self._user_id}")
                 return data
                 
+        except SchluterAuthenticationError:
+            raise
         except Exception as e:
             _LOGGER.error(f"Login with credentials failed: {e}")
             raise SchluterAuthenticationError(f"Login failed: {e}")
+    
+    def _sanitize_response(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Sanitize response for logging - remove sensitive data"""
+        sanitized = {}
+        for key, value in data.items():
+            if key.lower() in ["password", "token", "refreshtoken", "accesstoken", "access_token", "refresh_token"]:
+                sanitized[key] = "***REDACTED***"
+            elif isinstance(value, dict):
+                sanitized[key] = self._sanitize_response(value)
+            elif isinstance(value, list):
+                sanitized[key] = f"[{len(value)} items]"
+            else:
+                sanitized[key] = str(value)[:50]  # First 50 chars only
+        return sanitized
+    
     
     async def login(self, refresh_token: str) -> Dict[str, Any]:
         """
@@ -193,15 +229,21 @@ class SchluterAPI:
                 response.raise_for_status()
                 data = await response.json()
                 
-                # Store tokens and user info
+                # Store tokens and session info
                 self._refresh_token = refresh_token
                 self._access_token = data.get("access_token")
                 
+                # Extract session ID from login response
+                if "session" in data:
+                    self._session_id = data["session"]
+                    _LOGGER.info(f"Session ID obtained from login: {self._session_id[:20]}...")
+                
+                # Extract user info
                 if "user" in data:
                     self._user_id = data["user"].get("id")
-                    self._account_id = data["user"].get("account$id")
+                    self._account_id = data["user"].get("account$id") or data.get("account", {}).get("id")
                 
-                _LOGGER.info(f"Login successful. User ID: {self._user_id}")
+                _LOGGER.info(f"Login successful. User ID: {self._user_id}, Account ID: {self._account_id}")
                 return data
                 
         except Exception as e:
@@ -233,10 +275,28 @@ class SchluterAPI:
                 response.raise_for_status()
                 data = await response.json()
                 
-                self._session_id = data.get("session")
-                _LOGGER.info(f"Connected. Session ID obtained.")
+                _LOGGER.debug(f"Connect response keys: {list(data.keys())}")
+                
+                # Try different possible session key locations
+                session_id = None
+                if "session" in data:
+                    session_id = data["session"]
+                elif "sessionId" in data:
+                    session_id = data["sessionId"]
+                elif "session_id" in data:
+                    session_id = data["session_id"]
+                
+                if not session_id:
+                    _LOGGER.error(f"No session ID in connect response. Keys: {list(data.keys())}")
+                    _LOGGER.error(f"Full response: {data}")
+                    raise SchluterAuthenticationError("No session ID in connect response")
+                
+                self._session_id = session_id
+                _LOGGER.info(f"Connected. Session ID obtained: {session_id[:20]}...")
                 return self._session_id
                 
+        except SchluterAuthenticationError:
+            raise
         except Exception as e:
             _LOGGER.error(f"Connect failed: {e}")
             raise SchluterAuthenticationError(f"Connect failed: {e}")
